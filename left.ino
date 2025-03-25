@@ -387,7 +387,7 @@ void drawLifeWeeksLeftScene()
   int currentY = MARGIN_TOP + RECT_VERTICAL_SPACING;
   int rectsPerRow = (display.width() - 2 * MARGIN_LEFT) / (RECT_SIZE + RECT_HORIZONTAL_SPACING);
 
-  for (int week = 0; week < 2000; week++) // TODO: As we increase this number, the view will be more fucked up (we can say "pale", to be more polite/specific)
+  for (int week = 0; week < 4000; week++) // TODO: As we increase this number, the view will be more fucked up (we can say "pale", to be more polite/specific)
   {
     // Draw rectangle for this week
     if (week < (int)weeks_lived)
@@ -399,7 +399,7 @@ void drawLifeWeeksLeftScene()
     {
       // Future week - outline rectangle
       // display.drawRect(currentX, currentY, RECT_SIZE, RECT_SIZE, GxEPD_BLACK); // TODO: If we use this, it's going to be super fucked up
-      display.fillRect(currentX, currentY, RECT_SIZE, RECT_SIZE, GxEPD_BLACK);
+      display.fillRect(currentX + 2, currentY + 2, RECT_SIZE - 4, RECT_SIZE - 4, GxEPD_BLACK);
     }
 
     // Move to next position
