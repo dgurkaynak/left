@@ -51,7 +51,7 @@ const int daylightOffset_sec = 3600;
 
 const unsigned long SIX_HOURS_IN_MS = 6UL * 60UL * 60UL * 1000UL; // 6 hours in milliseconds
 unsigned long lastRefreshTime = 0;                                // Track last refresh time
-bool firstRefreshDone = false;                                   // Track if we've done the first midnight refresh
+bool firstRefreshDone = false;                                    // Track if we've done the first midnight refresh
 
 void setup()
 {
@@ -76,9 +76,9 @@ void setup()
   display.init(115200);
   // first update should be full refresh
 
-  // drawYearProgressScene();
-  drawYearDaysLeftScene();
-  // drawLifeWeeksLeftScene();
+  // drawYearProgress();
+  drawDaysLeftInYear();
+  // drawWeeksLeftInLife();
 
   lastRefreshTime = millis(); // Initialize last refresh time
   delay(1000);
@@ -91,37 +91,43 @@ void loop()
 {
   unsigned long currentTime = millis();
   struct tm timeinfo;
-  
+
   // Get current time
-  if (!getLocalTime(&timeinfo)) {
+  if (!getLocalTime(&timeinfo))
+  {
     Serial.println("Failed to obtain time");
     delay(1000);
     return;
   }
 
   // If we haven't done the first refresh yet, wait until midnight
-  if (!firstRefreshDone) {
+  if (!firstRefreshDone)
+  {
     // Calculate time until midnight
     int secondsUntilMidnight = (24 - timeinfo.tm_hour) * 3600 - timeinfo.tm_min * 60 - timeinfo.tm_sec;
     unsigned long msUntilMidnight = secondsUntilMidnight * 1000UL;
-    
-    if (currentTime - lastRefreshTime >= msUntilMidnight) {
+
+    if (currentTime - lastRefreshTime >= msUntilMidnight)
+    {
       // It's midnight, do the first refresh
       Serial.println("First refresh at midnight...");
       connectToWiFiAndSyncTimeAndDisconnectWifi();
       display.init(115200);
-      drawYearDaysLeftScene();
+      drawDaysLeftInYear();
       display.powerOff();
       lastRefreshTime = currentTime;
       firstRefreshDone = true;
     }
-  } else {
+  }
+  else
+  {
     // After first refresh, refresh every 24 hours
-    if (currentTime - lastRefreshTime >= 24UL * 60UL * 60UL * 1000UL) {
+    if (currentTime - lastRefreshTime >= 24UL * 60UL * 60UL * 1000UL)
+    {
       Serial.println("24 hours passed, refreshing display...");
       connectToWiFiAndSyncTimeAndDisconnectWifi();
       display.init(115200);
-      drawYearDaysLeftScene();
+      drawDaysLeftInYear();
       display.powerOff();
       lastRefreshTime = currentTime;
     }
@@ -131,7 +137,7 @@ void loop()
   delay(1000);
 }
 
-void drawYearProgressScene()
+void drawYearProgress()
 {
   // Get the current date
   struct tm timeinfo;
@@ -241,10 +247,10 @@ void drawYearProgressScene()
   display.drawLine(MARGIN_LEFT + CIRCLE_HORIZONTAL_SPACING, 30, display.width() - MARGIN_RIGHT - CIRCLE_HORIZONTAL_SPACING - 3, 30, GxEPD_BLACK);
 
   display.nextPage();
-  Serial.println("drawYearProgressScene done");
+  Serial.println("drawYearProgress done");
 }
 
-void drawYearDaysLeftScene()
+void drawDaysLeftInYear()
 {
   // Get the current date
   struct tm timeinfo;
@@ -393,10 +399,10 @@ void drawYearDaysLeftScene()
   display.drawLine(MARGIN_LEFT, 30, display.width() - MARGIN_RIGHT - 3, 30, GxEPD_BLACK);
 
   display.nextPage();
-  Serial.println("drawYearDaysLeftScene done");
+  Serial.println("drawDaysLeftInYear done");
 }
 
-void drawLifeWeeksLeftScene()
+void drawWeeksLeftInLife()
 {
   // Get the current date
   struct tm timeinfo;
@@ -480,7 +486,7 @@ void drawLifeWeeksLeftScene()
   display.print(weeksStr);
 
   display.nextPage();
-  Serial.println("drawLifeWeeksLeftScene done");
+  Serial.println("drawWeeksLeftInLife done");
 }
 
 void connectToWiFiAndSyncTimeAndDisconnectWifi()
