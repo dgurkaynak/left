@@ -51,6 +51,7 @@ const int daylightOffset_sec = 3600;
 
 const unsigned long SIX_HOURS_IN_MS = 6UL * 60UL * 60UL * 1000UL; // 6 hours in milliseconds
 unsigned long lastRefreshTime = 0;                                // Track last refresh time
+bool firstRefreshDone = false;                                   // Track if we've done the first midnight refresh
 
 void setup()
 {
@@ -89,28 +90,41 @@ void setup()
 void loop()
 {
   unsigned long currentTime = millis();
+  struct tm timeinfo;
+  
+  // Get current time
+  if (!getLocalTime(&timeinfo)) {
+    Serial.println("Failed to obtain time");
+    delay(1000);
+    return;
+  }
 
-  // Check if 6 hours have passed since last refresh
-  if (currentTime - lastRefreshTime >= SIX_HOURS_IN_MS)
-  {
-    Serial.println("6 hours passed, refreshing display...");
-
-    // Connect to WiFi and sync time before refresh
-    connectToWiFiAndSyncTimeAndDisconnectWifi();
-
-    // Wake up the display
-    display.init(115200);
-
-    // Update the display
-    drawYearProgressScene();
-
-    // Power off the display to save energy
-    display.powerOff();
-
-    // Update last refresh time
-    lastRefreshTime = currentTime;
-
-    Serial.println("Display refresh complete");
+  // If we haven't done the first refresh yet, wait until midnight
+  if (!firstRefreshDone) {
+    // Calculate time until midnight
+    int secondsUntilMidnight = (24 - timeinfo.tm_hour) * 3600 - timeinfo.tm_min * 60 - timeinfo.tm_sec;
+    unsigned long msUntilMidnight = secondsUntilMidnight * 1000UL;
+    
+    if (currentTime - lastRefreshTime >= msUntilMidnight) {
+      // It's midnight, do the first refresh
+      Serial.println("First refresh at midnight...");
+      connectToWiFiAndSyncTimeAndDisconnectWifi();
+      display.init(115200);
+      drawYearDaysLeftScene();
+      display.powerOff();
+      lastRefreshTime = currentTime;
+      firstRefreshDone = true;
+    }
+  } else {
+    // After first refresh, refresh every 24 hours
+    if (currentTime - lastRefreshTime >= 24UL * 60UL * 60UL * 1000UL) {
+      Serial.println("24 hours passed, refreshing display...");
+      connectToWiFiAndSyncTimeAndDisconnectWifi();
+      display.init(115200);
+      drawYearDaysLeftScene();
+      display.powerOff();
+      lastRefreshTime = currentTime;
+    }
   }
 
   // Add a small delay to prevent too frequent checks
