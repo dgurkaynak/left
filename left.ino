@@ -49,8 +49,8 @@ const char *ntpServer = "pool.ntp.org";
 const long gmtOffset_sec = 0;
 const int daylightOffset_sec = 3600;
 
-const unsigned long SIX_HOURS_IN_MS = 6UL * 60UL * 60UL * 1000UL;  // 6 hours in milliseconds
-unsigned long lastRefreshTime = 0;  // Track last refresh time
+const unsigned long SIX_HOURS_IN_MS = 6UL * 60UL * 60UL * 1000UL; // 6 hours in milliseconds
+unsigned long lastRefreshTime = 0;                                // Track last refresh time
 
 void setup()
 {
@@ -77,7 +77,7 @@ void setup()
 
   drawYearProgressScene();
   drawYearDaysLeftScene();
-  lastRefreshTime = millis();  // Initialize last refresh time
+  lastRefreshTime = millis(); // Initialize last refresh time
   delay(1000);
 
   display.powerOff();
@@ -87,29 +87,30 @@ void setup()
 void loop()
 {
   unsigned long currentTime = millis();
-  
+
   // Check if 6 hours have passed since last refresh
-  if (currentTime - lastRefreshTime >= SIX_HOURS_IN_MS) {
+  if (currentTime - lastRefreshTime >= SIX_HOURS_IN_MS)
+  {
     Serial.println("6 hours passed, refreshing display...");
-    
+
     // Connect to WiFi and sync time before refresh
     connectToWiFiAndSyncTimeAndDisconnectWifi();
-    
+
     // Wake up the display
     display.init(115200);
-    
+
     // Update the display
     drawYearProgressScene();
-    
+
     // Power off the display to save energy
     display.powerOff();
-    
+
     // Update last refresh time
     lastRefreshTime = currentTime;
-    
+
     Serial.println("Display refresh complete");
   }
-  
+
   // Add a small delay to prevent too frequent checks
   delay(1000);
 }
@@ -208,8 +209,8 @@ void drawYearProgressScene()
   char refreshStr[50];
   sprintf(refreshStr, "Refreshed at %02d/%02d/%d %02d:%02d",
           timeinfo.tm_mday,
-          timeinfo.tm_mon + 1,  // tm_mon is 0-based, so add 1 for human-readable month
-          timeinfo.tm_year + 1900,  // tm_year is years since 1900
+          timeinfo.tm_mon + 1,     // tm_mon is 0-based, so add 1 for human-readable month
+          timeinfo.tm_year + 1900, // tm_year is years since 1900
           timeinfo.tm_hour, timeinfo.tm_min);
 
   // Calculate text width for center alignment of refresh text
@@ -226,7 +227,6 @@ void drawYearProgressScene()
   display.nextPage();
   Serial.println("drawYearProgressScene done");
 }
-
 
 void drawYearDaysLeftScene()
 {
@@ -253,8 +253,8 @@ void drawYearDaysLeftScene()
   int currentDayOfYear = timeinfo.tm_yday + 1;
 
   // Calculate remaining days with decimal precision
-  float remainingDays = daysInYear - currentDayOfYear + 1.0;  // Add 1.0 to include current day
-  float remainingDaysWithDecimal = remainingDays + (24.0 - timeinfo.tm_hour) / 24.0;  // Add decimal part based on current hour
+  float remainingDays = daysInYear - currentDayOfYear + 1.0;                         // Add 1.0 to include current day
+  float remainingDaysWithDecimal = remainingDays + (24.0 - timeinfo.tm_hour) / 24.0; // Add decimal part based on current hour
 
   int MARGIN_LEFT = 8;
   int MARGIN_TOP = 36;
@@ -325,8 +325,8 @@ void drawYearDaysLeftScene()
   char refreshStr[50];
   sprintf(refreshStr, "Refreshed at %02d/%02d/%d %02d:%02d",
           timeinfo.tm_mday,
-          timeinfo.tm_mon + 1,  // tm_mon is 0-based, so add 1 for human-readable month
-          timeinfo.tm_year + 1900,  // tm_year is years since 1900
+          timeinfo.tm_mon + 1,     // tm_mon is 0-based, so add 1 for human-readable month
+          timeinfo.tm_year + 1900, // tm_year is years since 1900
           timeinfo.tm_hour, timeinfo.tm_min);
 
   // Calculate text width for center alignment of refresh text
