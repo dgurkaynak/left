@@ -10,6 +10,7 @@
 #include <time.h>
 #include <Fonts/FreeMono9pt7b.h>
 #include "fonts/helvetica-neue-thin-32pt7b.h"
+#include "credentials.h"
 
 // select the display class (only one), matching the kind of display panel
 #define GxEPD2_DISPLAY_CLASS GxEPD2_BW
@@ -43,9 +44,6 @@ GxEPD2_DISPLAY_CLASS<GxEPD2_DRIVER_CLASS, MAX_HEIGHT(GxEPD2_DRIVER_CLASS)> displ
 #if defined(ESP32) && defined(USE_HSPI_FOR_EPD)
 SPIClass hspi(HSPI);
 #endif
-
-const char *ssid = "WIFI_SSID_HERE";
-const char *password = "WIFI_PASSWORD_HERE";
 
 const char *ntpServer = "pool.ntp.org";
 const long gmtOffset_sec = 0;
@@ -350,8 +348,8 @@ void connectToWiFiAndSyncTimeAndDisconnectWifi()
 {
   // Connect to Wi-Fi
   Serial.print("Connecting to ");
-  Serial.print(ssid);
-  WiFi.begin(ssid, password);
+  Serial.print(WIFI_SSID);
+  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
   while (WiFi.status() != WL_CONNECTED)
   {
     delay(500);

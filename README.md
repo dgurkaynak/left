@@ -13,4 +13,14 @@
     - Don't forget to install its dependencies as well.
 - Now, the libraries are set
 - Double click `masabasi.ino` and let the Arduino IDE opens it
+- Create a `crendentials.h` file
+```c
+#ifndef CREDENTIALS_H
+#define CREDENTIALS_H
+
+const char *WIFI_SSID = "your_wifi_name";
+const char *WIFI_PASSWORD = "your_wifi_password";
+
+#endif 
+```
 - Click upload & see it's working
