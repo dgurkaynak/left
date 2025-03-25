@@ -230,6 +230,7 @@ void drawYearProgressScene()
   Serial.println("drawYearProgressScene done");
 }
 
+// TODO: Zaten 12 row ciziyormusuz, aylara gore bolsek ya. Baya tatli olur.
 void drawYearDaysLeftScene()
 {
   // Get the current date
@@ -372,7 +373,7 @@ void drawLifeWeeksLeftScene()
   int weeks_remaining = 4000 - (int)weeks_lived;
 
   int MARGIN_LEFT = 8;
-  int MARGIN_TOP = 36;
+  int MARGIN_TOP = 8;
   int RECT_SIZE = 6;
   int RECT_HORIZONTAL_SPACING = 2;
   int RECT_VERTICAL_SPACING = 2;
@@ -428,26 +429,6 @@ void drawLifeWeeksLeftScene()
   display.getTextBounds(weeksStr, 0, 0, &tbx, &tby, &tbw, &tbh);
   display.setCursor(display.width() - tbw - MARGIN_RIGHT - RECT_HORIZONTAL_SPACING - 5, display.height() - MARGIN_BOTTOM);
   display.print(weeksStr);
-
-  // Draw the refresh timestamp with different font at the top center
-  display.setFont(&FreeMono9pt7b);
-  char refreshStr[50];
-  sprintf(refreshStr, "Refreshed at %02d/%02d/%d %02d:%02d",
-          timeinfo.tm_mday,
-          timeinfo.tm_mon + 1,     // tm_mon is 0-based, so add 1 for human-readable month
-          timeinfo.tm_year + 1900, // tm_year is years since 1900
-          timeinfo.tm_hour, timeinfo.tm_min);
-
-  // Calculate text width for center alignment of refresh text
-  int16_t rtbx, rtby;
-  uint16_t rtbw, rtbh;
-  display.getTextBounds(refreshStr, 0, 0, &rtbx, &rtby, &rtbw, &rtbh);
-  uint16_t refreshX = (display.width() - rtbw) / 2;
-  display.setCursor(refreshX, 20);
-  display.print(refreshStr);
-
-  // Draw a horizontal line below refresh timestamp
-  display.drawLine(MARGIN_LEFT + RECT_HORIZONTAL_SPACING, 30, display.width() - MARGIN_RIGHT - RECT_HORIZONTAL_SPACING - 3, 30, GxEPD_BLACK);
 
   display.nextPage();
   Serial.println("drawLifeWeeksLeftScene done");
