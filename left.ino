@@ -75,8 +75,10 @@ void setup()
   display.init(115200);
   // first update should be full refresh
 
-  drawYearProgressScene();
-  drawYearDaysLeftScene();
+  // drawYearProgressScene();
+  // drawYearDaysLeftScene();
+  drawLifeWeeksLeftScene();
+
   lastRefreshTime = millis(); // Initialize last refresh time
   delay(1000);
 
@@ -342,6 +344,113 @@ void drawYearDaysLeftScene()
 
   display.nextPage();
   Serial.println("drawYearDaysLeftScene done");
+}
+
+void drawLifeWeeksLeftScene()
+{
+  // Get the current date
+  struct tm timeinfo;
+  if (!getLocalTime(&timeinfo))
+  {
+    Serial.println("Failed to obtain time");
+    return;
+  }
+
+  // Calculate birth date in time_t format
+  struct tm birth = {0};
+  birth.tm_year = 89; // 1989
+  birth.tm_mon = 3;   // April (0-based)
+  birth.tm_mday = 12; // 12th
+  time_t birth_time = mktime(&birth);
+
+  // Get current time
+  time_t now;
+  time(&now);
+
+  // Calculate weeks lived and remaining
+  double weeks_lived = difftime(now, birth_time) / (7.0 * 24.0 * 60.0 * 60.0);
+  int weeks_remaining = 4000 - (int)weeks_lived;
+
+  int MARGIN_LEFT = 8;
+  int MARGIN_TOP = 36;
+  int RECT_SIZE = 6;
+  int RECT_HORIZONTAL_SPACING = 2;
+  int RECT_VERTICAL_SPACING = 2;
+
+  display.setRotation(0);
+  display.setFullWindow();
+  display.firstPage();
+  display.fillScreen(GxEPD_WHITE);
+
+  // Draw the rectangles (weeks of life)
+  int currentX = MARGIN_LEFT + RECT_HORIZONTAL_SPACING;
+  int currentY = MARGIN_TOP + RECT_VERTICAL_SPACING;
+  int rectsPerRow = (display.width() - 2 * MARGIN_LEFT) / (RECT_SIZE + RECT_HORIZONTAL_SPACING);
+
+  for (int week = 0; week < 2000; week++) // TODO: As we increase this number, the view will be more fucked up (we can say "pale", to be more polite/specific)
+  {
+    // Draw rectangle for this week
+    if (week < (int)weeks_lived)
+    {
+      // Past week - filled rectangle
+      display.fillRect(currentX, currentY, RECT_SIZE, RECT_SIZE, GxEPD_BLACK);
+    }
+    else
+    {
+      // Future week - outline rectangle
+      // display.drawRect(currentX, currentY, RECT_SIZE, RECT_SIZE, GxEPD_BLACK); // TODO: If we use this, it's going to be super fucked up
+      display.fillRect(currentX, currentY, RECT_SIZE, RECT_SIZE, GxEPD_BLACK);
+    }
+
+    // Move to next position
+    currentX += RECT_SIZE + RECT_HORIZONTAL_SPACING;
+
+    // If we've reached the end of the row, move to next row
+    if (currentX + RECT_SIZE > display.width() - MARGIN_LEFT)
+    {
+      currentX = MARGIN_LEFT + RECT_HORIZONTAL_SPACING;
+      currentY += RECT_SIZE + RECT_VERTICAL_SPACING;
+    }
+  }
+
+  int MARGIN_BOTTOM = 15;
+  int MARGIN_RIGHT = 8;
+
+  // Draw the remaining weeks text
+  display.setFont(&HelveticaNeueThin32pt7b);
+  display.setTextColor(GxEPD_BLACK);
+  char weeksStr[20];
+  sprintf(weeksStr, "%d weeks left", weeks_remaining);
+
+  // Calculate text width for right alignment of weeks text
+  int16_t tbx, tby;
+  uint16_t tbw, tbh;
+  display.getTextBounds(weeksStr, 0, 0, &tbx, &tby, &tbw, &tbh);
+  display.setCursor(display.width() - tbw - MARGIN_RIGHT - RECT_HORIZONTAL_SPACING - 5, display.height() - MARGIN_BOTTOM);
+  display.print(weeksStr);
+
+  // Draw the refresh timestamp with different font at the top center
+  display.setFont(&FreeMono9pt7b);
+  char refreshStr[50];
+  sprintf(refreshStr, "Refreshed at %02d/%02d/%d %02d:%02d",
+          timeinfo.tm_mday,
+          timeinfo.tm_mon + 1,     // tm_mon is 0-based, so add 1 for human-readable month
+          timeinfo.tm_year + 1900, // tm_year is years since 1900
+          timeinfo.tm_hour, timeinfo.tm_min);
+
+  // Calculate text width for center alignment of refresh text
+  int16_t rtbx, rtby;
+  uint16_t rtbw, rtbh;
+  display.getTextBounds(refreshStr, 0, 0, &rtbx, &rtby, &rtbw, &rtbh);
+  uint16_t refreshX = (display.width() - rtbw) / 2;
+  display.setCursor(refreshX, 20);
+  display.print(refreshStr);
+
+  // Draw a horizontal line below refresh timestamp
+  display.drawLine(MARGIN_LEFT + RECT_HORIZONTAL_SPACING, 30, display.width() - MARGIN_RIGHT - RECT_HORIZONTAL_SPACING - 3, 30, GxEPD_BLACK);
+
+  display.nextPage();
+  Serial.println("drawLifeWeeksLeftScene done");
 }
 
 void connectToWiFiAndSyncTimeAndDisconnectWifi()
