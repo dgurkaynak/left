@@ -72,9 +72,7 @@ void setup()
   display.init(115200);
   // first update should be full refresh
 
-  // drawYearProgress();
-  drawDaysLeftInYear();
-  // drawWeeksLeftInLife();
+  draw();
 
   delay(1000);
 
@@ -84,7 +82,32 @@ void setup()
 
 void loop()
 {
-  // Do nothing
+  // Get the current time
+  struct tm timeinfo;
+  if (!getLocalTime(&timeinfo))
+  {
+    return;
+  }
+
+  // Check if it's midnight (00:00)
+  if (timeinfo.tm_hour == 0 && timeinfo.tm_min == 0)
+  {
+    // Refresh the display
+    draw();
+
+    // Power off the display to save energy
+    display.powerOff();
+  }
+
+  // Sleep for a minute before checking again
+  delay(60000);
+}
+
+void draw()
+{
+  // drawYearProgress();
+  drawDaysLeftInYear();
+  // drawWeeksLeftInLife();
 }
 
 void drawYearProgress()
