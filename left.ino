@@ -10,6 +10,7 @@
 #include <time.h>
 #include <Fonts/FreeMono9pt7b.h>
 #include "fonts/helvetica-neue-thin-32pt7b.h"
+#include "fonts/helvetica-neue-light-16pt7b.h"
 #include "credentials.h"
 
 // select the display class (only one), matching the kind of display panel
@@ -106,8 +107,8 @@ void loop()
 void draw()
 {
   // drawYearProgress();
-  drawDaysLeftInYear();
-  // drawWeeksLeftInLife();
+  // drawDaysLeftInYear();
+  drawWeeksLeftInLife();
 }
 
 void drawYearProgress()
@@ -388,6 +389,10 @@ void drawWeeksLeftInLife()
     return;
   }
 
+  // Get current time
+  time_t now;
+  time(&now);
+
   // Calculate birth date in time_t format
   struct tm birth = {0};
   birth.tm_year = 89; // 1989
@@ -395,18 +400,15 @@ void drawWeeksLeftInLife()
   birth.tm_mday = 12; // 12th
   time_t birth_time = mktime(&birth);
 
-  // Get current time
-  time_t now;
-  time(&now);
-
   // Calculate weeks lived and remaining
+  int life_expectancy_in_weeks = 4000;
   double weeks_lived = difftime(now, birth_time) / (7.0 * 24.0 * 60.0 * 60.0);
-  int weeks_remaining = 4000 - (int)weeks_lived;
+  int weeks_remaining = life_expectancy_in_weeks - (int)weeks_lived;
 
-  int MARGIN_LEFT = 8;
-  int MARGIN_TOP = 8;
+  int MARGIN_LEFT = 15;
+  int MARGIN_TOP = 5;
   int RECT_SIZE = 6;
-  int RECT_HORIZONTAL_SPACING = 2;
+  int RECT_HORIZONTAL_SPACING = 4;
   int RECT_VERTICAL_SPACING = 2;
 
   display.setRotation(0);
@@ -415,41 +417,51 @@ void drawWeeksLeftInLife()
   display.fillScreen(GxEPD_WHITE);
 
   // Draw the rectangles (weeks of life)
-  int currentX = MARGIN_LEFT + RECT_HORIZONTAL_SPACING;
-  int currentY = MARGIN_TOP + RECT_VERTICAL_SPACING;
-  int rectsPerRow = (display.width() - 2 * MARGIN_LEFT) / (RECT_SIZE + RECT_HORIZONTAL_SPACING);
-
-  for (int week = 0; week < 4000; week++) // TODO: As we increase this number, the view will be more fucked up (we can say "pale", to be more polite/specific)
+  for (int i_week = 0; i_week < life_expectancy_in_weeks; i_week++)
   {
-    // Draw rectangle for this week
-    if (week < (int)weeks_lived)
+    // Break down the calculation to avoid overflow
+    int64_t seconds_per_day = 24L * 60L * 60L;
+    int64_t seconds_per_week = 7L * seconds_per_day;
+    int64_t offset_seconds = (int64_t)i_week * seconds_per_week;
+    time_t i_date = birth_time + (time_t)offset_seconds;
+
+    // Extract the week number of the year (ISO 8601)
+    struct tm i_tm_storage = {0};
+    memcpy(&i_tm_storage, localtime(&i_date), sizeof(struct tm));
+    struct tm *i_tm = &i_tm_storage;
+
+    char week_str[3];
+    strftime(week_str, sizeof(week_str), "%V", i_tm);
+    int week_number = atoi(week_str);
+
+    // Get birth year from birth_time using a separate tm structure
+    struct tm birth_tm_storage = {0};
+    memcpy(&birth_tm_storage, localtime(&birth_time), sizeof(struct tm));
+    struct tm *birth_tm = &birth_tm_storage;
+
+    // Calculate the coordinates
+    int year_diff = i_tm->tm_year - birth_tm->tm_year;
+    int currentX = MARGIN_LEFT + year_diff * (RECT_SIZE + RECT_HORIZONTAL_SPACING);
+    int currentY = MARGIN_TOP + week_number * (RECT_SIZE + RECT_VERTICAL_SPACING);
+
+    // Draw the rectangle based on whether it's in the past or future
+    if (i_date < now)
     {
       // Past week - filled rectangle
       display.fillRect(currentX, currentY, RECT_SIZE, RECT_SIZE, GxEPD_BLACK);
     }
     else
     {
-      // Future week - outline rectangle
-      // display.drawRect(currentX, currentY, RECT_SIZE, RECT_SIZE, GxEPD_BLACK); // TODO: If we use this, it's going to be super fucked up
+      // Future week - small filled rectangle
       display.fillRect(currentX + 2, currentY + 2, RECT_SIZE - 4, RECT_SIZE - 4, GxEPD_BLACK);
-    }
-
-    // Move to next position
-    currentX += RECT_SIZE + RECT_HORIZONTAL_SPACING;
-
-    // If we've reached the end of the row, move to next row
-    if (currentX + RECT_SIZE > display.width() - MARGIN_LEFT)
-    {
-      currentX = MARGIN_LEFT + RECT_HORIZONTAL_SPACING;
-      currentY += RECT_SIZE + RECT_VERTICAL_SPACING;
     }
   }
 
   int MARGIN_BOTTOM = 15;
-  int MARGIN_RIGHT = 8;
+  int MARGIN_RIGHT = 12;
 
   // Draw the remaining weeks text
-  display.setFont(&HelveticaNeueThin32pt7b);
+  display.setFont(&HelveticaNeueLight16pt7b);
   display.setTextColor(GxEPD_BLACK);
   char weeksStr[20];
   sprintf(weeksStr, "%d weeks left", weeks_remaining);
@@ -458,7 +470,7 @@ void drawWeeksLeftInLife()
   int16_t tbx, tby;
   uint16_t tbw, tbh;
   display.getTextBounds(weeksStr, 0, 0, &tbx, &tby, &tbw, &tbh);
-  display.setCursor(display.width() - tbw - MARGIN_RIGHT - RECT_HORIZONTAL_SPACING - 5, display.height() - MARGIN_BOTTOM);
+  display.setCursor(display.width() - tbw - MARGIN_RIGHT - 5, display.height() - MARGIN_BOTTOM);
   display.print(weeksStr);
 
   display.nextPage();
