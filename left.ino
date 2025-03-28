@@ -76,7 +76,7 @@ void setup()
 
   delay(1000);
 
-  display.powerOff();
+  display.hibernate();
   Serial.println("setup done");
 }
 
@@ -96,7 +96,7 @@ void loop()
     draw();
 
     // Power off the display to save energy
-    display.powerOff();
+    display.hibernate();
   }
 
   // Sleep for a minute before checking again
