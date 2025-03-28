@@ -280,12 +280,15 @@ void drawDaysLeftInYear()
     display.print(labelStr);
   }
 
-  // Draw current day label
-  char currentDayStr[3];
-  sprintf(currentDayStr, "%d", currentDay);
-  int currentDayX = startX + (currentDay - 1) * (2 * CIRCLE_RADIUS + CIRCLE_HORIZONTAL_SPACING);
-  display.setCursor(currentDayX - 10, 20);
-  display.print(currentDayStr);
+  // Draw current day label only if it's not 10, 20, or 30
+  if (currentDay != 10 && currentDay != 20 && currentDay != 30)
+  {
+    char currentDayStr[3];
+    sprintf(currentDayStr, "%d", currentDay);
+    int currentDayX = startX + (currentDay - 1) * (2 * CIRCLE_RADIUS + CIRCLE_HORIZONTAL_SPACING);
+    display.setCursor(currentDayX - 10, 20);
+    display.print(currentDayStr);
+  }
 
   // Draw a horizontal line below the labels
   display.drawLine(MARGIN_LEFT, 30, display.width() - MARGIN_RIGHT - 3, 30, GxEPD_BLACK);
