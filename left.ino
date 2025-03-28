@@ -10,7 +10,6 @@
 #include <time.h>
 #include <Fonts/FreeMono9pt7b.h>
 #include "fonts/helvetica-neue-thin-32pt7b.h"
-#include "fonts/helvetica-neue-light-16pt7b.h"
 #include "credentials.h"
 
 // select the display class (only one), matching the kind of display panel
@@ -406,7 +405,7 @@ void drawWeeksLeftInLife()
   int weeks_remaining = life_expectancy_in_weeks - (int)weeks_lived;
 
   int MARGIN_LEFT = 15;
-  int MARGIN_TOP = 5;
+  int MARGIN_TOP = 20;
   int RECT_SIZE = 6;
   int RECT_HORIZONTAL_SPACING = 4;
   int RECT_VERTICAL_SPACING = 2;
@@ -457,21 +456,46 @@ void drawWeeksLeftInLife()
     }
   }
 
-  int MARGIN_BOTTOM = 15;
-  int MARGIN_RIGHT = 12;
+  // Calculate where (x position) the future weeks starts and ends
+  int future_start_x = MARGIN_LEFT + ((int)(weeks_lived) / 52) * (RECT_SIZE + RECT_HORIZONTAL_SPACING);
+  int future_end_x = MARGIN_LEFT + (life_expectancy_in_weeks / 52) * (RECT_SIZE + RECT_HORIZONTAL_SPACING);
 
   // Draw the remaining weeks text
-  display.setFont(&HelveticaNeueLight16pt7b);
+  display.setFont(&HelveticaNeueThin32pt7b);
   display.setTextColor(GxEPD_BLACK);
-  char weeksStr[20];
-  sprintf(weeksStr, "%d weeks left", weeks_remaining);
 
-  // Calculate text width for right alignment of weeks text
-  int16_t tbx, tby;
-  uint16_t tbw, tbh;
-  display.getTextBounds(weeksStr, 0, 0, &tbx, &tby, &tbw, &tbh);
-  display.setCursor(display.width() - tbw - MARGIN_RIGHT - 5, display.height() - MARGIN_BOTTOM);
+  // Create three separate strings
+  char numStr[10], weeksStr[] = "weeks", leftStr[] = "left";
+  sprintf(numStr, "%d", weeks_remaining);
+
+  // Calculate bounds for each line
+  int16_t tbx1, tby1, tbx2, tby2, tbx3, tby3;
+  uint16_t tbw1, tbh1, tbw2, tbh2, tbw3, tbh3;
+  display.getTextBounds(numStr, 0, 0, &tbx1, &tby1, &tbw1, &tbh1);
+  display.getTextBounds(weeksStr, 0, 0, &tbx2, &tby2, &tbw2, &tbh2);
+  display.getTextBounds(leftStr, 0, 0, &tbx3, &tby3, &tbw3, &tbh3);
+
+  // Calculate center position in future weeks area
+  int future_area_width = future_end_x - future_start_x;
+  int text_x1 = future_start_x + (future_area_width - tbw1) / 2;
+  int text_x2 = future_start_x + (future_area_width - tbw2) / 2;
+  int text_x3 = future_start_x + (future_area_width - tbw3) / 2;
+
+  // Calculate vertical positions
+  int TEXT_VERTICAL_SPACING = 12;
+  int available_height = display.height() - 20;
+  int total_text_height = tbh1 + tbh2 + tbh3 + 10; // Add 10 pixels spacing between lines
+  int start_y = (available_height - total_text_height) / 2;
+
+  // Draw each line
+  display.setCursor(text_x1, start_y + tbh1);
+  display.print(numStr);
+
+  display.setCursor(text_x2, start_y + tbh1 + TEXT_VERTICAL_SPACING + tbh2);
   display.print(weeksStr);
+
+  display.setCursor(text_x3, start_y + tbh1 + TEXT_VERTICAL_SPACING + tbh2 + TEXT_VERTICAL_SPACING + tbh3 + 5);
+  display.print(leftStr);
 
   display.nextPage();
   Serial.println("drawWeeksLeftInLife done");
