@@ -49,10 +49,6 @@ const char *ntpServer = "pool.ntp.org";
 const long gmtOffset_sec = 0;
 const int daylightOffset_sec = 3600;
 
-const unsigned long SIX_HOURS_IN_MS = 6UL * 60UL * 60UL * 1000UL; // 6 hours in milliseconds
-unsigned long lastRefreshTime = 0;                                // Track last refresh time
-bool firstRefreshDone = false;                                    // Track if we've done the first midnight refresh
-
 void setup()
 {
   Serial.begin(115200);
@@ -80,7 +76,6 @@ void setup()
   drawDaysLeftInYear();
   // drawWeeksLeftInLife();
 
-  lastRefreshTime = millis(); // Initialize last refresh time
   delay(1000);
 
   display.powerOff();
@@ -89,52 +84,7 @@ void setup()
 
 void loop()
 {
-  unsigned long currentTime = millis();
-  struct tm timeinfo;
-
-  // Get current time
-  if (!getLocalTime(&timeinfo))
-  {
-    Serial.println("Failed to obtain time");
-    delay(1000);
-    return;
-  }
-
-  // If we haven't done the first refresh yet, wait until midnight
-  if (!firstRefreshDone)
-  {
-    // Calculate time until midnight
-    int secondsUntilMidnight = (24 - timeinfo.tm_hour) * 3600 - timeinfo.tm_min * 60 - timeinfo.tm_sec;
-    unsigned long msUntilMidnight = secondsUntilMidnight * 1000UL;
-
-    if (currentTime - lastRefreshTime >= msUntilMidnight)
-    {
-      // It's midnight, do the first refresh
-      Serial.println("First refresh at midnight...");
-      connectToWiFiAndSyncTimeAndDisconnectWifi();
-      display.init(115200);
-      drawDaysLeftInYear();
-      display.powerOff();
-      lastRefreshTime = currentTime;
-      firstRefreshDone = true;
-    }
-  }
-  else
-  {
-    // After first refresh, refresh every 24 hours
-    if (currentTime - lastRefreshTime >= 24UL * 60UL * 60UL * 1000UL)
-    {
-      Serial.println("24 hours passed, refreshing display...");
-      connectToWiFiAndSyncTimeAndDisconnectWifi();
-      display.init(115200);
-      drawDaysLeftInYear();
-      display.powerOff();
-      lastRefreshTime = currentTime;
-    }
-  }
-
-  // Add a small delay to prevent too frequent checks
-  delay(1000);
+  // Do nothing
 }
 
 void drawYearProgress()
