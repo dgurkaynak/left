@@ -95,6 +95,9 @@ void loop()
     // Refresh the display
     draw();
 
+    // Connect to WiFi and sync time
+    connectToWiFiAndSyncTimeAndDisconnectWifi();
+
     // Power off the display to save energy
     display.hibernate();
   }
@@ -106,8 +109,8 @@ void loop()
 void draw()
 {
   // drawYearProgress();
-  // drawDaysLeftInYear();
-  drawWeeksLeftInLife();
+  drawDaysLeftInYear();
+  // drawWeeksLeftInLife();
 }
 
 void drawYearProgress()
