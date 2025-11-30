@@ -21,6 +21,11 @@
 const char *WIFI_SSID = "your_wifi_name";
 const char *WIFI_PASSWORD = "your_wifi_password";
 
+// Birth date (for life expectancy calculations)
+const int BIRTH_YEAR = 1989;
+const int BIRTH_MONTH = 4;   // April (1-based, will be converted to 0-based in code)
+const int BIRTH_DAY = 12;
+
 #endif 
 ```
 - Click upload & see it's working

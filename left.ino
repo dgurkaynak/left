@@ -77,7 +77,7 @@ void setup()
   delay(1000);
 
   display.hibernate();
-  Serial.println("setup done");
+  Serial.println("Setup done");
 }
 
 void loop()
@@ -284,9 +284,9 @@ void drawWeeksLeftInLife()
 
   // Calculate birth date in time_t format
   struct tm birth = {0};
-  birth.tm_year = 89; // 1989
-  birth.tm_mon = 3;   // April (0-based)
-  birth.tm_mday = 12; // 12th
+  birth.tm_year = BIRTH_YEAR - 1900; // tm_year is years since 1900
+  birth.tm_mon = BIRTH_MONTH - 1;    // tm_mon is 0-based (0 = January)
+  birth.tm_mday = BIRTH_DAY;
   time_t birth_time = mktime(&birth);
 
   // Calculate weeks lived and remaining
